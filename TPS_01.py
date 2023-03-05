@@ -4,6 +4,8 @@ from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText 
 import re
 from tkinter.messagebox import showinfo
+import os
+
 
 root = Tk()
 root.title('Формирование файлов в Техподдержку ЕИСУКС')
@@ -74,7 +76,9 @@ text.pack()
 #        text.insert(1.0, '\n')
         
 def clicked():
-    
+    print(os.getcwd())
+    TEXTO_ = ''
+    ii = 0
     VidF = text.get("1.0", "end")
     print('VidF_', VidF)
     #if VidF == '':                          # не работает код, если VidF пусто
@@ -82,7 +86,8 @@ def clicked():
     for n in range(len(sheets)):
         if sheets[n] != VidF:
             text.delete(1.0, END)
-            text.insert(1.0, 'Выберите')
+            text.insert(1.0, 'ОШИБКА!\nНЕ ВЫБРАН ТИП ДОКУМЕНТА!\n\
+Выберите ТИП ДОКУМЕНТА для обработки в ЧекБоксе.')
     
     VidF =str(VidF.strip())
     #text.delete(1.0, END)
@@ -95,33 +100,46 @@ def clicked():
     dff = pd.DataFrame(columns = column)
     print(df1.columns, len(df1))
     print(df0.columns, len(df0))
-
+    
+############################################
+    
     for name in range(len(df1)):
-        TEXTO = df1['text'].loc[df1.index[name]]
+        TEXTO = df1['text'].loc[df1.index[name]] # Выбор текста для поика
         #print('TEXTO  =  ', TEXTO)
-        my_regex = r"\b(?=\w)" + re.escape(TEXTO) + r"\b(?!\w)"
+        my_regex = r"\b(?=\w)" + re.escape(TEXTO) + r"\b(?!\w)" # регулярное выражение (формат для поиска)
         df0['Ошибка'].fillna('jjj', inplace=True) # замена NAN а текст 'jjj'
     
-        for i in range(len(df0)):    
+        for i in range(len(df0)):               # Просмотр всех строк фрейма df0
             df0_ = df0['Ошибка'].loc[df0.index[i]]
         #print(df0_)
             row = df0.iloc[i]
         #print(row[8])
-            if re.search(my_regex, row[8]):
+            if re.search(my_regex, row[8]):     # Если ячейка 'Ошибка' совпадает с my_regex
                 dff.loc[df0.index[i]] = df0.iloc[i]
+                ii = ii +1
     #    print(row)
-    text.delete(1.0, END)
+            TEXTO_1 = str(ii) + ' ' + TEXTO
+        ii = 0
+        TEXTO_ = TEXTO_ + '\n' +  TEXTO_1
+    text.delete(1.0, END)      
     if enabled.get() ==1:
         dff = dff[dff['ВидФайла']. str.contains(VidF, na= False)]
-        text.insert(END, 'Включен поиск по полю "Вид Файла"\n')
+        text.insert(END, 'Включен поиск по полю "Вид Файла"\n')  # Вывод поля "Вид файла"
     print(dff)
     dff = dff[['НомерОбласти','Учреждение','ИдентификаторУчреждения','ЦБ',
                'КодСВР','GUIDЗапроса','ВидФайла','ИдентификаторОбъекта','Ошибка']]
+    
     dfff = dff[['ВидФайла','Ошибка']]
     
-    text.insert(END, VidF+'\n')
-    text.insert(END, dfff)
+    text.insert(END, str(len(dfff)) + ' ' + VidF + '\n')     # Вывод "Тип Документа"
+    text.insert(END, TEXTO_ +'\n')     # Вывод "Тип Документа" 
+    text.insert(END, dfff)         # Вывод Отчета
+
+    os.chdir('Отчеты')
+    dff.to_excel(VidF + '.xlsx', index=False) # охранение в папку Отчеты
+    os.chdir('..')
     
+############################################
     d={}
     for name in range(len(df1)):
  ##       print(df1['text'].loc[df1.index[name]])
@@ -140,11 +158,13 @@ def clicked():
     for name, df in d.items():
         print('555555555', df)
     
-    for i in str(name):
-          d[name].to_excel(df1['text'].loc[df1.index[int(i)]] + '.xlsx', index=False)
+    # for i in str(name):
+    #      d[name].to_excel(df1['text'].loc[df1.index[int(i)]] + '.xlsx', index=False)
 
     #print('Перс\n', df01)
-
+##############################################################################
+    #   Кнопки
+          
 Button(frame, text="СТАРТ", command=clicked).pack(side=LEFT)
 Button(frame, text="Закрыть", command=root.destroy).pack(side=LEFT)
 
