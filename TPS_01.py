@@ -112,10 +112,10 @@ def clicked():
         for i in range(len(df0)):               # Просмотр всех строк фрейма df0
             df0_ = df0['Ошибка'].loc[df0.index[i]]
         #print(df0_)
-            row = df0.iloc[i]
+            row = df0.iloc[i]                   # ячейка 'Ошибка'
         #print(row[8])
-            if re.search(my_regex, row[8]):     # Если ячейка 'Ошибка' совпадает с my_regex
-                dff.loc[df0.index[i]] = df0.iloc[i]
+            if re.search(my_regex, row[8]):     # Если ячейка 'Ошибка' содержит my_regex
+                dff.loc[df0.index[i]] = df0.iloc[i]  # Добавляем в фрейм dff строку из df0
                 ii = ii +1
     #    print(row)
             TEXTO_1 = str(ii) + ' ' + TEXTO
@@ -162,11 +162,73 @@ def clicked():
     #      d[name].to_excel(df1['text'].loc[df1.index[int(i)]] + '.xlsx', index=False)
 
     #print('Перс\n', df01)
+
+##############################################################################
+    #   clickedCheck
+    
+def clickedCheck():
+    text.delete(1.0, END)
+    #from glob import glob
+    #DIRE = list(glob(os.path.join('Отчеты', '*.xlsx')))
+    #os.getcwd()
+    #os.chdir('Отчеты')
+    df1 = pd.read_excel('ЦА_ТО_Сведения_загрузки_данных.xlsx', sheet_name='TDSheet')
+    df1 = df1[['НомерОбласти','Учреждение', 'ИдентификаторУчреждения','ЦБ','КодСВР',
+                 'GUIDЗапроса','ВидФайла','ИдентификаторОбъекта', 'Ошибка']]
+    #df1 = df1[['GUIDЗапроса',]]
+    DIRE = os.listdir('Отчеты')
+    print(len(df1))
+    text.insert(END, 'Всего строк в исходном отчете: ') 
+    text.insert(END, len(df1)) 
+    print(DIRE)
+    column = df1.columns
+    df_Rez = pd.DataFrame(columns = column)
+    for file in range(len(DIRE)) :
+        if re.search('.xlsx', DIRE[file]):
+            if DIRE[file] != 'Остатки.xlsx':
+                print(DIRE[file])
+                text.insert(END, '\n\n')
+                text.insert(END, DIRE[file]) 
+                os.chdir('Отчеты')
+                df2 = pd.read_excel(DIRE[file], sheet_name='Sheet1')
+                df2 = df2[['НомерОбласти','Учреждение', 'ИдентификаторУчреждения','ЦБ','КодСВР',
+                                     'GUIDЗапроса','ВидФайла','ИдентификаторОбъекта', 'Ошибка']]
+            #df2 = df2[['GUIDЗапроса',]]
+                print(len(df_Rez))
+                print(len(df2))
+                text.insert(END, '\nСтрок в отчете: ') 
+                text.insert(END, len(df2))            
+                os.chdir('..')
+                df_Rez = pd.concat([df_Rez,df2])
+            #df1 = pd.concat([df2, df1])
+            #df1 = df1.reset_index(drop=True)
+            #df_gpby = df1.groupby(list(df1.columns))
+            #idx = [x[0] for x in df_gpby.groups.values() if len(x) == 1]
+            #df1.reindex(idx)
+                print(len(df_Rez))
+    text.insert(END, '\n\nСумма строк в Сводах: ') 
+    text.insert(END, len(df_Rez))
+    df_Rez = pd.concat([df1,df_Rez]).drop_duplicates(keep=False)
+    print(len(df_Rez))
+    text.insert(END, '\n\nРазница Исходного и Сводов: ') 
+    text.insert(END, len(df_Rez))
+
+    os.chdir('Отчеты')
+    df_Rez.to_excel('Остатки.xlsx', index=False) # охранение в папку Отчеты
+    os.chdir('..')
+    
 ##############################################################################
     #   Кнопки
           
 Button(frame, text="СТАРТ", command=clicked).pack(side=LEFT)
+Button(frame, text="Остатки", command=clickedCheck).pack(side=LEFT)
 Button(frame, text="Закрыть", command=root.destroy).pack(side=LEFT)
+
+value_var = IntVar()
+progressbar =  ttk.Progressbar(frame, orient="horizontal", variable=value_var)
+progressbar.pack(side=RIGHT)
+label = ttk.Label(frame, textvariable=value_var)
+label.pack(side=RIGHT)
 
 ##############################################################################
     #  Checkbutton   "Включить для поиска поле "Вид Файла""
