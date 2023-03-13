@@ -69,7 +69,7 @@ text.pack()
 ##############################################################################
     #  Button   "СТАРТ"
    
-def clicked():
+def start():
     def foo_2(arg):
         print(arg)
     if __name__ == '__main__':
@@ -129,7 +129,7 @@ def clicked():
                 text.insert(END, str(len(df_1)) + ' ' + TEXTO +'\n')     # Вывод "Тип Документа" 
     #print('\nСписок d\n', d)
     result = pd.concat(d) #, ignore_index=True)  ##  конкатеция
-    result_2 = pd.concat(d2, ignore_index=True)  ##  конкатеция
+    result_2 = pd.concat(d2, ignore_index=False)  ##  конкатеция
     #print('result \n', result)
 
     if enabled.get() == 1:
@@ -157,6 +157,8 @@ def clicked():
                      'GUIDЗапроса','ВидФайла','ИдентификаторОбъекта', 'Ошибка']]    
     text.insert('1.0', str(len(result)) + ' ' + VidF_in + '\n')     # Вывод "Тип Документа"
     text.insert(END, result_2)         # Вывод Отчета
+    result2 =result[['НомерОбласти', 'Ошибка']]
+    text.insert(END, result[['НомерОбласти', 'Ошибка']])         # Вывод Отчета
     print('\n result \n', result)
     result.to_excel('Свод_ошибок_по_учреждениям_' + VidF_in + '.xlsx', index=False)
 
@@ -236,7 +238,7 @@ def clickedCheck():
 ##############################################################################
     #   Кнопки
           
-Button(frame, text="СТАРТ", command=clicked).pack(side=LEFT)
+Button(frame, text="СТАРТ", command=start).pack(side=LEFT)
 Button(frame, text="Отмены", command=otmena).pack(side=LEFT)
 Button(frame, text="Остатки", command=clickedCheck).pack(side=LEFT)
 Button(frame, text="Закрыть", command=root.destroy).pack(side=LEFT)
